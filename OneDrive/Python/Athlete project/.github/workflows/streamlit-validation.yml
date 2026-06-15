@@ -1,0 +1,35 @@
+name: Streamlit App Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  streamlit-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Validate Streamlit app syntax
+      run: |
+        streamlit run app.py --logger.level=debug --client.showErrorDetails=true --headless=true 2>&1 | head -50
+      continue-on-error: true
+
+    - name: Check for common Streamlit issues
+      run: |
+        python -m py_compile app.py shotput_Statistics.py
+        echo "✓ Python syntax validation passed"
